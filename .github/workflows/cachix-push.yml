@@ -1,4 +1,4 @@
-name: "Nix flake check"
+name: "Cachix push"
 on:
   push:
     branches:
@@ -6,7 +6,7 @@ on:
 jobs:
 
   check:
-    runs-on: macos-12
+    runs-on: ubuntu--latest
     permissions:
       contents: read
       id-token: write
@@ -15,4 +15,3 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - run: nix flake check
-      - run: nix flake build

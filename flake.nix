@@ -29,11 +29,12 @@
       
       schemas = flake-schemas.schemas;
 
-      packages = forEachSupportedSystem ({ pkgs }: {
+      packages = forEachSupportedSystem ({ pkgs }: rec {
         python3WithPandocRunFilter = pkgs.python3.withPackages(ps: [
           ps.cffi
           # ps.pandoc-run-filter
         ]);
+        default = python3WithPandocRunFilter;
       });
 
       overlays = {
