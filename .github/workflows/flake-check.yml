@@ -1,4 +1,4 @@
-name: "Nix flake check"
+name: "Nix build"
 on:
   push:
     branches:
@@ -15,4 +15,4 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - run: nix flake check
-      - run: nix flake build
+      - run: nix build
