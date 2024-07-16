@@ -1,0 +1,17 @@
+name: "Nix flake check"
+on:
+  push:
+    branches:
+      - "main"
+jobs:
+
+  check:
+    runs-on: macos-12
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: "actions/checkout@v4"
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - run: nix flake check
