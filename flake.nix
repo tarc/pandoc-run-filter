@@ -31,8 +31,7 @@
 
       packages = forEachSupportedSystem ({ pkgs }: rec {
         python3Extra = pkgs.python3.withPackages(ps: [
-          ps.cffi
-          # ps.pandoc-run-filter
+          ps.pandoc-run-filter
         ]);
         default = python3Extra;
       });
@@ -43,13 +42,11 @@
         };
         pythonExtraPackages = final: prev: {
           pythonPackagesOverlays = (prev.pythonPackagesOverlays or []) ++ [
-            # (pyfinal: pyprev: {
-            #   pandoc-run-filter = pyfinal.callPackage ./pandoc-run-filter {};
-            # })
             (pyfinal: pyprev: {
-              # cffi = pyprev.cffi.overridePythonAttrs(old: {
-              #   doCheck = old.doCheck && !prev.stdenv.isDarwin;
-              # });
+              cffi = pyprev.cffi.overridePythonAttrs(old: {
+                doCheck = old.doCheck && !prev.stdenv.isDarwin;
+              });
+              pandoc-run-filter = pyfinal.callPackage ./pandoc-run-filter {};
             })
           ];
           python3 =
@@ -63,7 +60,6 @@
           python3Packages = final.python3.pkgs;
         };
       };
-
       
       devShells = forEachSupportedSystem ({ pkgs }: {
         default = pkgs.mkShell {
