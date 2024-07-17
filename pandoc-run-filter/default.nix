@@ -1,33 +1,25 @@
-{ buildPythonPackage,
+{ python3Packages,
   fetchFromGitHub,
-  lib,
-  pandocfilters,
-  psutil,
-  setuptools
-}:
+  lib
+}: with python3Packages;
 
 buildPythonPackage rec {
   pname = "pandoc-run-filter";
   version = "0.2.0";
   format = "pyproject";
 
-  src = fetchFromGitHub {
-    owner = "johnlwhiteman";
-    repo = pname;
-    rev = version;
-    hash = "sha256-beiGvN0DS6s8wFjcDKozDuwAM2OApX3lTRaUDRUqLeU=";
+  src = fetchPypi {
+    inherit pname version;
+    hash = "sha256-hFc3E3jE6ypEtEeFyHHI8meZRGGnJmabakDUm+LRy1o=";
   };
 
-  nativeBuildInputs = [ setuptools ];
-
-  pythonRelaxDeps = [ "psutil" ];
+  nativeBuildInputs = [ setuptools pytest pyfiglet ];
 
   propagatedBuildInputs = [
     pandocfilters
     psutil
+    pillow
   ];
-
-  pythonImportsCheck = [ "pandocrunfilter" ];
 
   doCheck = false;
 

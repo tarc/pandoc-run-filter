@@ -30,16 +30,16 @@
       schemas = flake-schemas.schemas;
 
       packages = forEachSupportedSystem ({ pkgs }: rec {
-        python3WithPandocRunFilter = pkgs.python3.withPackages(ps: [
+        python3Extra = pkgs.python3.withPackages(ps: [
           ps.cffi
           # ps.pandoc-run-filter
         ]);
-        default = python3WithPandocRunFilter;
+        default = python3Extra;
       });
 
       overlays = {
         extraPackages = final: prev: {
-          python3WithPandocRunFilter = self.packages.${prev.system}.python3WithPandocRunFilter;
+          python3Extra = self.packages.${prev.system}.python3Extra;
         };
         pythonExtraPackages = final: prev: {
           pythonPackagesOverlays = (prev.pythonPackagesOverlays or []) ++ [
@@ -47,9 +47,9 @@
             #   pandoc-run-filter = pyfinal.callPackage ./pandoc-run-filter {};
             # })
             (pyfinal: pyprev: {
-              cffi = pyprev.cffi.overridePythonAttrs(old: {
-                doCheck = old.doCheck && !prev.stdenv.isDarwin;
-              });
+              # cffi = pyprev.cffi.overridePythonAttrs(old: {
+              #   doCheck = old.doCheck && !prev.stdenv.isDarwin;
+              # });
             })
           ];
           python3 =
@@ -69,7 +69,7 @@
         default = pkgs.mkShell {
           packages = with pkgs; [
             git
-            python3WithPandocRunFilter
+            python3Extra
           ];
         };
       });
