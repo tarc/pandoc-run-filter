@@ -6,60 +6,50 @@
   
   inputs = {
     flake-schemas.url = "https://flakehub.com/f/DeterminateSystems/flake-schemas/*";
-
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/*";
+    systems.url = "github:nix-systems/default";
+
+    devenv.url = "github:cachix/devenv";
+    devenv.inputs.nixpkgs.follows = "nixpkgs";
+
+    nixpkgs-python.url = "github:cachix/nixpkgs-python";
+    nixpkgs-python.inputs.nixpkgs.follows = "nixpkgs";
+
+    fenix.url = "github:nix-community/fenix";
+    fenix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  
-  outputs = { self, flake-schemas, nixpkgs }:
+  nixConfig = {
+    extra-trusted-public-keys = ''
+      devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=
+      nixpkgs-python.cachix.org-1:hxjI7pFxTyuTHn2NkvWCrAUcNZLNS3ZAvfYNuYifcEU=
+    '';
+    extra-substituters = ''
+      https://devenv.cachix.org
+      https://nixpkgs-python.cachix.org
+    '';
+  };
+
+  outputs = { self, flake-schemas, nixpkgs, devenv, systems, ... } @ inputs:
     let
-      
-      supportedSystems = [ "x86_64-darwin" "x86_64-linux" ];
 
-      forEachSupportedSystem = f: nixpkgs.lib.genAttrs supportedSystems (system: f {
-
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = builtins.attrValues self.overlays;
-        };
-
-      });
+      forEachSystem = nixpkgs.lib.genAttrs (import systems);
 
     in {
       
       schemas = flake-schemas.schemas;
 
-      packages = forEachSupportedSystem ({ pkgs }: rec {
-        python3Extra = pkgs.python3.withPackages(ps: [
-          ps.pandoc-run-filter
-        ]);
-        default = python3Extra;
+      packages = forEachSystem (system: {
+        devenv-up = self.devShells.${system}.default.config.procfileScript;
       });
 
-      overlays = {
-        extraPackages = final: prev: {
-          python3Extra = self.packages.${prev.system}.python3Extra;
-        };
-        pythonExtraPackages = final: prev: {
-          pythonPackagesOverlays = (prev.pythonPackagesOverlays or []) ++ import ./pythonPackages { inherit prev; };
-          python3 = let self = prev.python3.override {
-            inherit self;
-            packageOverrides = prev.lib.composeManyExtensions final.pythonPackagesOverlays;
-          }; in self;
-          python3Packages = final.python3.pkgs;
-        };
-        openldap = final: prev: {
-          openldap = prev.openldap.overrideAttrs {
-            doCheck = prev.openldap.doCheck && !prev.stdenv.isDarwin;
-          };
-        };
-      };
-      
-      devShells = forEachSupportedSystem ({ pkgs }: {
-        default = pkgs.mkShell {
-          packages = with pkgs; [
-            git
-            python3Extra
+      devShells = forEachSystem (system: let
+        pkgs = nixpkgs.legacyPackages.${system};
+      in {
+        default = devenv.lib.mkShell {
+          inherit inputs pkgs;
+          modules = [
+            (import ./devenv.nix)
           ];
         };
       });

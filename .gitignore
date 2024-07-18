@@ -1,0 +1,6 @@
+.DS_STORE
+.vscode/
+**/result
+.git/
+.devenv/
+.pre-commit-config.yaml
