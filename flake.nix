@@ -41,23 +41,17 @@
           python3Extra = self.packages.${prev.system}.python3Extra;
         };
         pythonExtraPackages = final: prev: {
-          pythonPackagesOverlays = (prev.pythonPackagesOverlays or []) ++ [
-            (pyfinal: pyprev: {
-              cffi = pyprev.cffi.overridePythonAttrs(old: {
-                doCheck = old.doCheck && !prev.stdenv.isDarwin;
-              });
-              pandoc-run-filter = pyfinal.callPackage ./pandoc-run-filter {};
-            })
-          ];
-          python3 =
-            let
-              self = prev.python3.override {
-                inherit self;
-                packageOverrides = prev.lib.composeManyExtensions final.pythonPackagesOverlays;
-              };
-            in self;
-
+          pythonPackagesOverlays = (prev.pythonPackagesOverlays or []) ++ import ./pythonPackages { inherit prev; };
+          python3 = let self = prev.python3.override {
+            inherit self;
+            packageOverrides = prev.lib.composeManyExtensions final.pythonPackagesOverlays;
+          }; in self;
           python3Packages = final.python3.pkgs;
+        };
+        openldap = final: prev: {
+          openldap = prev.openldap.overrideAttrs {
+            doCheck = prev.openldap.doCheck && !prev.stdenv.isDarwin;
+          };
         };
       };
       
